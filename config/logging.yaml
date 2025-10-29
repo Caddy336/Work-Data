@@ -1,0 +1,20 @@
+disable_existing_loggers: false
+formatters:
+  standard:
+    format: '%(asctime)s [%(levelname)s] %(name)s: %(message)s'
+handlers:
+  console:
+    class: logging.StreamHandler
+    formatter: standard
+    level: INFO
+  file:
+    class: logging.FileHandler
+    filename: /Users/caddyzhang/Documents/X_Codes/Caddy's data/logs/app_20251029.log
+    formatter: standard
+    level: DEBUG
+root:
+  handlers:
+  - console
+  - file
+  level: DEBUG
+version: 1
