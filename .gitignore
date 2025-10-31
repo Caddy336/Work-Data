@@ -18,13 +18,29 @@ ENV/
 .vscode/
 *.code-workspace
 
+# Streamlit 敏感信息
+.streamlit/secrets.toml
+**/.streamlit/secrets.toml
+dashboards/**/.streamlit/secrets.toml
+
 # 数据文件
 data/raw/*
 data/processed/*
 data/interim/*
+data/Trade until 202509/*
+dashboards/**/data/raw/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/interim/.gitkeep
+
+# CSV 和 Excel 临时文件
+*.csv
+*.xlsx
+*.xls
+!**/requirements.txt
+dashboards/**/cumulative_import_data.csv
+dashboards/**/monthly_import_data.csv
+dashboards/**/total_by_country.csv
 
 # 日志文件
 logs/*
