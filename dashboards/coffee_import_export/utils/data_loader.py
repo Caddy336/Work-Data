@@ -80,9 +80,9 @@ def load_from_nutstore():
     """从坚果云加载数据"""
     try:
         # 尝试从 secrets 读取凭证
-        if hasattr(st, 'secrets') and 'nutstore_email' in st.secrets:
-            email = st.secrets['nutstore_email']
-            app_password = st.secrets['nutstore_app_password']
+        if hasattr(st, 'secrets') and 'nutstore' in st.secrets:
+            email = st.secrets['nutstore']['email']
+            app_password = st.secrets['nutstore']['app_password']
         else:
             return None, "未配置坚果云凭证（需要在 .streamlit/secrets.toml 中配置）"
         
