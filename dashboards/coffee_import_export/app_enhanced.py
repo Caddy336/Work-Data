@@ -16,6 +16,10 @@ import sys
 import warnings
 warnings.filterwarnings('ignore')
 
+# 添加当前目录到路径（确保云端部署时能找到 utils 模块）
+current_dir = Path(__file__).parent
+sys.path.insert(0, str(current_dir))
+
 # 导入自定义工具模块
 from utils.config import COLOR_MAP, COUNTRIES, CUSTOM_CSS
 from utils.data_loader import load_from_nutstore, load_csv_data
@@ -24,10 +28,6 @@ from utils.data_processor import (
     process_export_data, 
     create_forecast_data
 )
-
-# 添加项目路径
-project_root = Path(__file__).parent.parent.parent
-sys.path.insert(0, str(project_root))
 
 # 页面配置
 st.set_page_config(
