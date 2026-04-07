@@ -3,21 +3,27 @@
 """
 
 import streamlit as st
-import pandas as pd
-import numpy as np
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-import tempfile
-import os
-import warnings
-warnings.filterwarnings('ignore')
 
-# 页面配置
+# 页面配置必须在最前面
 st.set_page_config(
     page_title="咖啡进口数据分析",
     page_icon="☕",
     layout="wide"
 )
+
+# 其他导入放在后面
+try:
+    import pandas as pd
+    import numpy as np
+    import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
+    import tempfile
+    import os
+    import warnings
+    warnings.filterwarnings('ignore')
+except ImportError as e:
+    st.error(f"导入依赖失败: {e}")
+    st.stop()
 
 # 配置常量
 COLOR_MAP = {
@@ -63,11 +69,15 @@ def categorize_country(partner):
 
 def load_from_nutstore():
     try:
-        if 'nutstore' not in st.secrets:
-            return None, "未配置坚果云凭证"
-        
-        email = st.secrets['nutstore']['email']
-        app_password = st.secrets['nutstore']['app_password']
+        # 安全检查 secrets
+        try:
+            secrets = st.secrets
+            if 'nutstore' not in secrets:
+                return None, "未配置坚果云凭证"
+            email = secrets['nutstore']['email']
+            app_password = secrets['nutstore']['app_password']
+        except Exception as e:
+            return None, f"Secrets 配置错误: {e}"
         
         from webdav3.client import Client
         options = {
