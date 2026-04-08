@@ -39,9 +39,10 @@ dashboards/**/data/raw/*
 *.xlsx
 *.xls
 !**/requirements.txt
-dashboards/**/cumulative_import_data.csv
-dashboards/**/monthly_import_data.csv
-dashboards/**/total_by_country.csv
+# 保留仪表盘备份数据（云端部署需要）
+!dashboards/coffee_import_export/cumulative_import_data.csv
+!dashboards/coffee_import_export/monthly_import_data.csv
+!dashboards/coffee_import_export/total_by_country.csv
 
 # 日志文件
 logs/*
