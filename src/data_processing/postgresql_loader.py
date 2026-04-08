@@ -5,9 +5,7 @@ PostgreSQL数据加载器
 import pandas as pd
 from sqlalchemy import create_engine, text
 from typing import Optional, Dict, List, Union
-from .data_loader import DataLoader
-
-class PostgreSQLLoader(DataLoader):
+class PostgreSQLLoader:
     """PostgreSQL数据加载器"""
     
     def __init__(self, 
@@ -30,7 +28,6 @@ class PostgreSQLLoader(DataLoader):
         - query: SQL查询语句
         - table_name: 表名（如果不使用自定义查询）
         """
-        super().__init__("")  # 文件路径为空，因为是数据库连接
         self.connection_params = {
             'host': host,
             'database': database,
