@@ -8,8 +8,7 @@ textColor = "#262730"
 font = "sans serif"
 
 [server]
-# 端口配置
-port = 8501
+
 # 启用文件监视（开发模式）
 fileWatcherType = "auto"
 # 启用 CORS
