@@ -29,9 +29,33 @@ def start_dashboard():
     print("  ✅ 预测功能")
     print()
     print("🚀 应用将在浏览器中打开: http://localhost:8501")
+    print("💡 按 Ctrl+C 或运行 'python main.py --stop' 停止服务")
     print()
     
     subprocess.run(["streamlit", "run", str(app_path)])
+
+
+def stop_dashboard():
+    """停止 Streamlit 仪表盘"""
+    import os
+    try:
+        # 获取占用 8501 端口的进程
+        result = subprocess.run(
+            ["lsof", "-ti:8501"], 
+            capture_output=True, 
+            text=True
+        )
+        pids = result.stdout.strip().split('\n')
+        
+        if pids and pids[0]:
+            for pid in pids:
+                if pid:
+                    os.kill(int(pid), signal.SIGKILL)
+            print("✅ 已停止仪表盘服务 (端口 8501)")
+        else:
+            print("ℹ️ 没有运行中的仪表盘服务")
+    except Exception as e:
+        print(f"❌ 停止失败: {e}")
 
 
 def check_config():
@@ -53,6 +77,8 @@ def main():
             check_config()
         elif arg in ("--test", "-t"):
             test_nutstore()
+        elif arg in ("--stop", "-s"):
+            stop_dashboard()
         elif arg in ("--help", "-h"):
             print(__doc__)
         else:

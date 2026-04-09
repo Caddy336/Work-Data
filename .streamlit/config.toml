@@ -9,8 +9,7 @@ font = "sans serif"
 
 [server]
 
-# 启用文件监视（开发模式）
-fileWatcherType = "auto"
+
 # 启用 CORS
 enableCORS = false
 enableXsrfProtection = true
@@ -19,6 +18,3 @@ enableXsrfProtection = true
 # 自动打开浏览器
 gatherUsageStats = false
 
-[runner]
-# 快速重新运行
-fastReruns = true
