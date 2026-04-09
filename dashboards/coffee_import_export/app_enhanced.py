@@ -13,6 +13,7 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 from pathlib import Path
 import sys
+import io
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -40,6 +41,15 @@ st.set_page_config(
 # 应用自定义CSS
 st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 
+
+def fig_to_png_bytes(fig, width=1600, height=1000, scale=2):
+    """将 Plotly 图表转换为 PNG 字节数据"""
+    try:
+        img_bytes = fig.to_image(format="png", width=width, height=height, scale=scale)
+        return img_bytes
+    except Exception as e:
+        st.warning(f"图片生成失败: {str(e)}")
+        return None
 
 
 @st.cache_data(ttl=3600)
@@ -736,6 +746,17 @@ def main():
         if view_mode_monthly == "🔲 九宫格视图":
             fig = create_monthly_grid_chart(monthly_data, forecast_data, selected_year)
             st.plotly_chart(fig, use_container_width=True)
+            
+            # 下载按钮
+            img_bytes = fig_to_png_bytes(fig, width=1800, height=1200, scale=2)
+            if img_bytes:
+                st.download_button(
+                    label="📷 下载图片",
+                    data=img_bytes,
+                    file_name="monthly_import_by_country.png",
+                    mime="image/png",
+                    key="download_monthly_grid"
+                )
         else:
             # 单张视图 - 翻页导航
             col1, col2, col3 = st.columns([1, 3, 1])
@@ -766,6 +787,17 @@ def main():
             fig = create_single_monthly_chart(monthly_data, forecast_data, selected_year, current_country)
             st.plotly_chart(fig, use_container_width=True)
             
+            # 下载按钮
+            img_bytes = fig_to_png_bytes(fig, width=1200, height=700, scale=2)
+            if img_bytes:
+                st.download_button(
+                    label=f"📷 下载 {current_country} 图片",
+                    data=img_bytes,
+                    file_name=f"monthly_import_{current_country.lower().replace(' ', '_')}.png",
+                    mime="image/png",
+                    key="download_monthly_single"
+                )
+            
             # 进度指示器
             st.caption(f"📍 {st.session_state.monthly_country_idx + 1} / {len(COUNTRIES)} | 使用按钮或下拉菜单切换")
         
@@ -784,6 +816,17 @@ def main():
         if view_mode_cumulative == "🔲 九宫格视图":
             fig = create_cumulative_grid_chart(cumulative_data, forecast_data, selected_year)
             st.plotly_chart(fig, use_container_width=True)
+            
+            # 下载按钮
+            img_bytes = fig_to_png_bytes(fig, width=1800, height=1200, scale=2)
+            if img_bytes:
+                st.download_button(
+                    label="📷 下载图片",
+                    data=img_bytes,
+                    file_name="cumulative_import_by_country.png",
+                    mime="image/png",
+                    key="download_cumulative_grid"
+                )
         else:
             # 单张视图 - 翻页导航
             col1, col2, col3 = st.columns([1, 3, 1])
@@ -813,6 +856,17 @@ def main():
             current_country = COUNTRIES[st.session_state.cumulative_country_idx]
             fig = create_single_cumulative_chart(cumulative_data, forecast_data, selected_year, current_country)
             st.plotly_chart(fig, use_container_width=True)
+            
+            # 下载按钮
+            img_bytes = fig_to_png_bytes(fig, width=1200, height=700, scale=2)
+            if img_bytes:
+                st.download_button(
+                    label=f"📷 下载 {current_country} 图片",
+                    data=img_bytes,
+                    file_name=f"cumulative_import_{current_country.lower().replace(' ', '_')}.png",
+                    mime="image/png",
+                    key="download_cumulative_single"
+                )
             
             # 进度指示器
             st.caption(f"📍 {st.session_state.cumulative_country_idx + 1} / {len(COUNTRIES)} | 使用按钮或下拉菜单切换")
