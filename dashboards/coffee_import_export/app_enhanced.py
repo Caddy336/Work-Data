@@ -820,7 +820,9 @@ def main():
             with col1:
                 st.write("")  # 占位对齐
                 if st.button("⬅️ 上一个", key="monthly_prev", use_container_width=True):
-                    st.session_state.monthly_country_idx = (st.session_state.monthly_country_idx - 1) % len(COUNTRIES)
+                    new_idx = (st.session_state.monthly_country_idx - 1) % len(COUNTRIES)
+                    st.session_state.monthly_country_idx = new_idx
+                    st.session_state.monthly_country_select = COUNTRIES[new_idx]
                     st.rerun()
             
             with col2:
@@ -838,7 +840,9 @@ def main():
             with col3:
                 st.write("")  # 占位对齐
                 if st.button("下一个 ➡️", key="monthly_next", use_container_width=True):
-                    st.session_state.monthly_country_idx = (st.session_state.monthly_country_idx + 1) % len(COUNTRIES)
+                    new_idx = (st.session_state.monthly_country_idx + 1) % len(COUNTRIES)
+                    st.session_state.monthly_country_idx = new_idx
+                    st.session_state.monthly_country_select = COUNTRIES[new_idx]
                     st.rerun()
             
             # 显示当前国家图表
@@ -903,7 +907,9 @@ def main():
             with col1:
                 st.write("")  # 占位对齐
                 if st.button("⬅️ 上一个", key="cumulative_prev", use_container_width=True):
-                    st.session_state.cumulative_country_idx = (st.session_state.cumulative_country_idx - 1) % len(COUNTRIES)
+                    new_idx = (st.session_state.cumulative_country_idx - 1) % len(COUNTRIES)
+                    st.session_state.cumulative_country_idx = new_idx
+                    st.session_state.cumulative_country_select = COUNTRIES[new_idx]
                     st.rerun()
             
             with col2:
@@ -921,7 +927,9 @@ def main():
             with col3:
                 st.write("")  # 占位对齐
                 if st.button("下一个 ➡️", key="cumulative_next", use_container_width=True):
-                    st.session_state.cumulative_country_idx = (st.session_state.cumulative_country_idx + 1) % len(COUNTRIES)
+                    new_idx = (st.session_state.cumulative_country_idx + 1) % len(COUNTRIES)
+                    st.session_state.cumulative_country_idx = new_idx
+                    st.session_state.cumulative_country_select = COUNTRIES[new_idx]
                     st.rerun()
             
             # 显示当前国家图表
