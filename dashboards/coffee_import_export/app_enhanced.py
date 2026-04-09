@@ -272,6 +272,246 @@ def create_monthly_grid_chart(monthly_pivot, forecast_monthly, selected_year):
     
     return fig
 
+def create_single_monthly_chart(monthly_pivot, forecast_monthly, selected_year, country):
+    """创建单个国家的月度图表"""
+    years = sorted(monthly_pivot['year'].unique())
+    latest_year = max(years)
+    historical_years = [y for y in years if y < latest_year and y >= latest_year - 5]
+    
+    year_color_map = {
+        2021: '#1f77b4',
+        2022: '#ff7f0e',
+        2023: '#2ca02c',
+        2024: '#17becf',
+        2025: '#9467bd',
+    }
+    
+    fig = go.Figure()
+    
+    if country not in monthly_pivot.columns:
+        return fig
+    
+    # 绘制历史年份线图
+    for year in historical_years:
+        year_data = monthly_pivot[monthly_pivot['year'] == year].sort_values('month')
+        if len(year_data) > 0:
+            year_color = year_color_map.get(int(year), '#7f7f7f')
+            fig.add_trace(
+                go.Scatter(
+                    x=year_data['month'],
+                    y=year_data[country],
+                    mode='lines+markers',
+                    name=f'{int(year)}',
+                    line=dict(width=2, color=year_color),
+                    marker=dict(color=year_color, size=6),
+                    opacity=0.5,
+                    hovertemplate='<b>%{y:,.0f} 吨</b><extra></extra>'
+                )
+            )
+    
+    # 绘制选中年份柱状图
+    selected_data = monthly_pivot[monthly_pivot['year'] == selected_year].sort_values('month')
+    if len(selected_data) > 0:
+        text_labels = [f'{val:,.0f}' if val >= 1000 else f'{val:.0f}' 
+                      for val in selected_data[country]]
+        country_color = COLOR_MAP.get(country, '#95a5a6')
+        
+        fig.add_trace(
+            go.Bar(
+                x=selected_data['month'],
+                y=selected_data[country],
+                name=f'{int(selected_year)} (Actual)',
+                marker_color=country_color,
+                opacity=0.8,
+                text=text_labels,
+                textposition='outside',
+                textangle=0,
+                textfont=dict(size=12),
+                cliponaxis=False,
+                hovertemplate='<b>%{y:,.0f} 吨</b><extra></extra>'
+            )
+        )
+    
+    # 添加预测值
+    if country != 'Total' and len(forecast_monthly) > 0:
+        forecast_country = forecast_monthly[
+            (forecast_monthly['Country_Category'] == country) & 
+            (forecast_monthly['forecast_year'] == selected_year)
+        ].sort_values('forecast_month')
+        
+        if len(forecast_country) > 0:
+            forecast_col = 'Forecast_Quantity_tons' if 'Forecast_Quantity_tons' in forecast_country.columns else 'Forecast_tons'
+            month_col = 'forecast_month' if 'forecast_month' in forecast_country.columns else 'month'
+            forecast_text = [f'{val:,.0f}' if val >= 1000 else f'{val:.0f}' 
+                            for val in forecast_country[forecast_col]]
+            
+            fig.add_trace(
+                go.Bar(
+                    x=forecast_country[month_col],
+                    y=forecast_country[forecast_col],
+                    name=f'{int(selected_year)} (Forecast)',
+                    marker=dict(color=COLOR_MAP.get(country, '#95a5a6'), opacity=0.3, pattern_shape="/"),
+                    text=forecast_text,
+                    textposition='outside',
+                    textangle=0,
+                    textfont=dict(size=10, color='gray'),
+                    cliponaxis=False,
+                    hovertemplate='<b>预测: %{y:,.0f} 吨</b><extra></extra>'
+                )
+            )
+    
+    month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    
+    fig.update_layout(
+        title=dict(text=f"<b>{country}</b> - 月度进口量", font=dict(size=20)),
+        height=500,
+        xaxis=dict(
+            tickmode='array',
+            tickvals=list(range(1, 13)),
+            ticktext=month_names,
+            range=[0.5, 12.5],
+            title="月份"
+        ),
+        yaxis=dict(
+            title="进口量 (吨)",
+            tickformat=",",
+            separatethousands=True
+        ),
+        showlegend=True,
+        hovermode='closest',
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
+    
+    return fig
+
+
+def create_single_cumulative_chart(cumulative_pivot, forecast_monthly, selected_year, country):
+    """创建单个国家的累计图表"""
+    years = sorted(cumulative_pivot['year'].unique())
+    latest_year = max(years)
+    historical_years = [y for y in years if y < latest_year and y >= latest_year - 5]
+    
+    year_color_map = {
+        2021: '#1f77b4',
+        2022: '#ff7f0e',
+        2023: '#2ca02c',
+        2024: '#17becf',
+        2025: '#9467bd',
+    }
+    
+    fig = go.Figure()
+    
+    cumsum_col = f'{country}_cumsum'
+    if cumsum_col not in cumulative_pivot.columns:
+        return fig
+    
+    # 绘制历史年份
+    for year in historical_years:
+        year_data = cumulative_pivot[cumulative_pivot['year'] == year].sort_values('month')
+        if len(year_data) > 0:
+            year_color = year_color_map.get(int(year), '#7f7f7f')
+            fig.add_trace(
+                go.Scatter(
+                    x=year_data['month'],
+                    y=year_data[cumsum_col],
+                    mode='lines+markers',
+                    name=f'{int(year)}',
+                    line=dict(width=2, color=year_color),
+                    marker=dict(color=year_color, size=6),
+                    opacity=0.5,
+                    hovertemplate='<b>%{y:,.0f} 吨</b><extra></extra>'
+                )
+            )
+    
+    # 绘制选中年份实际数据
+    selected_data = cumulative_pivot[cumulative_pivot['year'] == selected_year].sort_values('month')
+    if len(selected_data) > 0:
+        country_color = COLOR_MAP.get(country, '#95a5a6')
+        text_labels = [f'{val:,.0f}' for val in selected_data[cumsum_col]]
+        
+        fig.add_trace(
+            go.Scatter(
+                x=selected_data['month'],
+                y=selected_data[cumsum_col],
+                mode='lines+markers+text',
+                name=f'{int(selected_year)} (Actual)',
+                line=dict(color=country_color, width=4),
+                marker=dict(size=10, color=country_color),
+                opacity=0.9,
+                text=text_labels,
+                textposition='top center',
+                textfont=dict(size=11),
+                hovertemplate='<b>%{y:,.0f} 吨</b><extra></extra>'
+            )
+        )
+    
+    # 添加预测累计数据
+    if country in ['Brazil', 'Vietnam', 'Colombia', 'Uganda'] and len(forecast_monthly) > 0:
+        forecast_country = forecast_monthly[
+            (forecast_monthly['Country_Category'] == country) & 
+            (forecast_monthly['year'] == selected_year)
+        ].sort_values('month')
+        
+        if len(forecast_country) > 0:
+            country_color = COLOR_MAP.get(country, '#95a5a6')
+            
+            if len(selected_data) > 0:
+                base_cumsum = selected_data[cumsum_col].iloc[-1]
+                last_actual_month = selected_data['month'].iloc[-1]
+            else:
+                base_cumsum = 0
+                last_actual_month = 0
+            
+            forecast_country = forecast_country[forecast_country['month'] > last_actual_month]
+            
+            if len(forecast_country) > 0:
+                forecast_col = 'Forecast_Quantity_tons' if 'Forecast_Quantity_tons' in forecast_country.columns else 'Forecast_tons'
+                forecast_cumsum = base_cumsum + forecast_country[forecast_col].cumsum()
+                forecast_text = [f'{val:,.0f}' for val in forecast_cumsum]
+                
+                fig.add_trace(
+                    go.Scatter(
+                        x=forecast_country['month'],
+                        y=forecast_cumsum,
+                        mode='lines+markers+text',
+                        name=f'{int(selected_year)} (Forecast)',
+                        line=dict(color=country_color, width=3, dash='dash'),
+                        marker=dict(size=8, color=country_color, symbol='square'),
+                        opacity=0.5,
+                        text=forecast_text,
+                        textposition='top center',
+                        textfont=dict(size=10, color='gray'),
+                        hovertemplate='<b>预测: %{y:,.0f} 吨</b><extra></extra>'
+                    )
+                )
+    
+    month_names = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                   'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    
+    fig.update_layout(
+        title=dict(text=f"<b>{country}</b> - 累计进口量", font=dict(size=20)),
+        height=500,
+        xaxis=dict(
+            tickmode='array',
+            tickvals=list(range(1, 13)),
+            ticktext=month_names,
+            range=[0.5, 12.5],
+            title="月份"
+        ),
+        yaxis=dict(
+            title="累计进口量 (吨)",
+            tickformat=",",
+            separatethousands=True
+        ),
+        showlegend=True,
+        hovermode='closest',
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+    )
+    
+    return fig
+
+
 def create_cumulative_grid_chart(cumulative_pivot, forecast_monthly, selected_year):
     """创建累计九宫格图表"""
     years = sorted(cumulative_pivot['year'].unique())
@@ -468,23 +708,106 @@ def main():
     years = sorted(monthly_data['year'].unique())
     selected_year = max(years)
     
+    # 初始化 session_state 用于跟踪当前国家索引
+    if 'monthly_country_idx' not in st.session_state:
+        st.session_state.monthly_country_idx = 0
+    if 'cumulative_country_idx' not in st.session_state:
+        st.session_state.cumulative_country_idx = 0
+    
     # 主要内容区域 - 三个Tab
     tab1, tab2, tab3 = st.tabs([
-        f"📈 月度九宫格 ({int(selected_year)})", 
-        f"📉 累计九宫格 ({int(selected_year)})",
+        f"📈 月度图表 ({int(selected_year)})", 
+        f"📉 累计图表 ({int(selected_year)})",
         "⚙️ 设置"
     ])
     
-    # Tab 1: 月度九宫格
+    # Tab 1: 月度图表
     with tab1:
-        fig = create_monthly_grid_chart(monthly_data, forecast_data, selected_year)
-        st.plotly_chart(fig, use_container_width=True)
+        # 视图模式选择
+        view_mode_monthly = st.radio(
+            "视图模式",
+            ["🔲 九宫格视图", "📄 单张视图"],
+            horizontal=True,
+            key="monthly_view_mode"
+        )
+        
+        if view_mode_monthly == "🔲 九宫格视图":
+            fig = create_monthly_grid_chart(monthly_data, forecast_data, selected_year)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            # 单张视图 - 翻页导航
+            col1, col2, col3 = st.columns([1, 3, 1])
+            
+            with col1:
+                if st.button("⬅️ 上一个", key="monthly_prev", use_container_width=True):
+                    st.session_state.monthly_country_idx = (st.session_state.monthly_country_idx - 1) % len(COUNTRIES)
+            
+            with col2:
+                selected_country_monthly = st.selectbox(
+                    "选择国家/地区",
+                    COUNTRIES,
+                    index=st.session_state.monthly_country_idx,
+                    key="monthly_country_select"
+                )
+                # 同步下拉选择与索引
+                st.session_state.monthly_country_idx = COUNTRIES.index(selected_country_monthly)
+            
+            with col3:
+                if st.button("下一个 ➡️", key="monthly_next", use_container_width=True):
+                    st.session_state.monthly_country_idx = (st.session_state.monthly_country_idx + 1) % len(COUNTRIES)
+            
+            # 显示当前国家图表
+            current_country = COUNTRIES[st.session_state.monthly_country_idx]
+            fig = create_single_monthly_chart(monthly_data, forecast_data, selected_year, current_country)
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # 进度指示器
+            st.caption(f"📍 {st.session_state.monthly_country_idx + 1} / {len(COUNTRIES)} | 使用按钮或下拉菜单切换")
+        
         st.caption("💡 线图=历史年份 | 实心柱=实际值 | 斜纹柱=预测值")
     
-    # Tab 2: 累计九宫格
+    # Tab 2: 累计图表
     with tab2:
-        fig = create_cumulative_grid_chart(cumulative_data, forecast_data, selected_year)
-        st.plotly_chart(fig, use_container_width=True)
+        # 视图模式选择
+        view_mode_cumulative = st.radio(
+            "视图模式",
+            ["🔲 九宫格视图", "📄 单张视图"],
+            horizontal=True,
+            key="cumulative_view_mode"
+        )
+        
+        if view_mode_cumulative == "🔲 九宫格视图":
+            fig = create_cumulative_grid_chart(cumulative_data, forecast_data, selected_year)
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            # 单张视图 - 翻页导航
+            col1, col2, col3 = st.columns([1, 3, 1])
+            
+            with col1:
+                if st.button("⬅️ 上一个", key="cumulative_prev", use_container_width=True):
+                    st.session_state.cumulative_country_idx = (st.session_state.cumulative_country_idx - 1) % len(COUNTRIES)
+            
+            with col2:
+                selected_country_cumulative = st.selectbox(
+                    "选择国家/地区",
+                    COUNTRIES,
+                    index=st.session_state.cumulative_country_idx,
+                    key="cumulative_country_select"
+                )
+                st.session_state.cumulative_country_idx = COUNTRIES.index(selected_country_cumulative)
+            
+            with col3:
+                if st.button("下一个 ➡️", key="cumulative_next", use_container_width=True):
+                    st.session_state.cumulative_country_idx = (st.session_state.cumulative_country_idx + 1) % len(COUNTRIES)
+            
+            # 显示当前国家图表
+            current_country = COUNTRIES[st.session_state.cumulative_country_idx]
+            fig = create_single_cumulative_chart(cumulative_data, forecast_data, selected_year, current_country)
+            st.plotly_chart(fig, use_container_width=True)
+            
+            # 进度指示器
+            st.caption(f"📍 {st.session_state.cumulative_country_idx + 1} / {len(COUNTRIES)} | 使用按钮或下拉菜单切换")
+        
         st.caption("💡 细线=历史年份 | 粗线=当前年份 | 虚线=预测")
     
     # Tab 3: 设置
