@@ -6,11 +6,10 @@ textColor = "#2c3e50"
 font = "sans serif"
 
 [server]
-headless = false
-port = 8501
+
 enableCORS = true
 enableXsrfProtection = true
 
 [browser]
 gatherUsageStats = false
-serverAddress = "localhost"
+
