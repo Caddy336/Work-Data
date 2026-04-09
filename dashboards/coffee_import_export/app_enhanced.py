@@ -55,6 +55,54 @@ def fig_to_png_bytes(fig, width=1600, height=1000, scale=2):
         return None
 
 
+def convert_fig_to_english(fig, chart_type="monthly", country=None):
+    """将图表转换为英文版本"""
+    import copy
+    fig_en = copy.deepcopy(fig)
+    
+    # 翻译映射
+    translations = {
+        "月度进口量": "Monthly Import Volume",
+        "累计进口量": "Cumulative Import Volume",
+        "月份": "Month",
+        "进口量 (吨)": "Import Volume (Tons)",
+        "累计进口量 (吨)": "Cumulative Import (Tons)",
+        "预测": "Forecast",
+        "吨": "tons",
+    }
+    
+    # 更新标题
+    if fig_en.layout.title and fig_en.layout.title.text:
+        title = fig_en.layout.title.text
+        for cn, en in translations.items():
+            title = title.replace(cn, en)
+        fig_en.layout.title.text = title
+    
+    # 更新X轴标题
+    if hasattr(fig_en.layout, 'xaxis') and fig_en.layout.xaxis.title:
+        if hasattr(fig_en.layout.xaxis.title, 'text'):
+            for cn, en in translations.items():
+                if fig_en.layout.xaxis.title.text:
+                    fig_en.layout.xaxis.title.text = fig_en.layout.xaxis.title.text.replace(cn, en)
+    
+    # 更新Y轴标题
+    if hasattr(fig_en.layout, 'yaxis') and fig_en.layout.yaxis.title:
+        if hasattr(fig_en.layout.yaxis.title, 'text'):
+            for cn, en in translations.items():
+                if fig_en.layout.yaxis.title.text:
+                    fig_en.layout.yaxis.title.text = fig_en.layout.yaxis.title.text.replace(cn, en)
+    
+    # 更新 hovertemplate
+    for trace in fig_en.data:
+        if hasattr(trace, 'hovertemplate') and trace.hovertemplate:
+            ht = trace.hovertemplate
+            ht = ht.replace("预测:", "Forecast:")
+            ht = ht.replace("吨", "tons")
+            trace.hovertemplate = ht
+    
+    return fig_en
+
+
 @st.cache_data(ttl=3600)
 def load_and_process_data(use_nutstore=True):
     """加载并处理数据"""
@@ -750,16 +798,21 @@ def main():
             fig = create_monthly_grid_chart(monthly_data, forecast_data, selected_year)
             st.plotly_chart(fig, use_container_width=True)
             
-            # 下载按钮
-            img_bytes = fig_to_png_bytes(fig, width=1800, height=1200, scale=2)
-            if img_bytes:
-                st.download_button(
-                    label="📷 下载图片",
-                    data=img_bytes,
-                    file_name="monthly_import_by_country.png",
-                    mime="image/png",
-                    key="download_monthly_grid"
-                )
+            # 下载按钮 - 支持中英文
+            dl_col1, dl_col2 = st.columns([1, 4])
+            with dl_col1:
+                lang_monthly_grid = st.radio("下载语言", ["English", "中文"], horizontal=True, key="lang_monthly_grid", label_visibility="collapsed")
+            with dl_col2:
+                fig_download = convert_fig_to_english(fig) if lang_monthly_grid == "English" else fig
+                img_bytes = fig_to_png_bytes(fig_download, width=1800, height=1200, scale=2)
+                if img_bytes:
+                    st.download_button(
+                        label="📷 下载图片",
+                        data=img_bytes,
+                        file_name="monthly_import_by_country.png",
+                        mime="image/png",
+                        key="download_monthly_grid"
+                    )
         else:
             # 单张视图 - 翻页导航
             col1, col2, col3 = st.columns([1, 3, 1])
@@ -790,16 +843,21 @@ def main():
             fig = create_single_monthly_chart(monthly_data, forecast_data, selected_year, current_country)
             st.plotly_chart(fig, use_container_width=True)
             
-            # 下载按钮
-            img_bytes = fig_to_png_bytes(fig, width=1200, height=700, scale=2)
-            if img_bytes:
-                st.download_button(
-                    label=f"📷 下载 {current_country} 图片",
-                    data=img_bytes,
-                    file_name=f"monthly_import_{current_country.lower().replace(' ', '_')}.png",
-                    mime="image/png",
-                    key="download_monthly_single"
-                )
+            # 下载按钮 - 支持中英文
+            dl_col1, dl_col2 = st.columns([1, 4])
+            with dl_col1:
+                lang_monthly_single = st.radio("下载语言", ["English", "中文"], horizontal=True, key="lang_monthly_single", label_visibility="collapsed")
+            with dl_col2:
+                fig_download = convert_fig_to_english(fig) if lang_monthly_single == "English" else fig
+                img_bytes = fig_to_png_bytes(fig_download, width=1200, height=700, scale=2)
+                if img_bytes:
+                    st.download_button(
+                        label=f"📷 下载 {current_country} 图片",
+                        data=img_bytes,
+                        file_name=f"monthly_import_{current_country.lower().replace(' ', '_')}.png",
+                        mime="image/png",
+                        key="download_monthly_single"
+                    )
             
             # 进度指示器
             st.caption(f"📍 {st.session_state.monthly_country_idx + 1} / {len(COUNTRIES)} | 使用按钮或下拉菜单切换")
@@ -820,16 +878,21 @@ def main():
             fig = create_cumulative_grid_chart(cumulative_data, forecast_data, selected_year)
             st.plotly_chart(fig, use_container_width=True)
             
-            # 下载按钮
-            img_bytes = fig_to_png_bytes(fig, width=1800, height=1200, scale=2)
-            if img_bytes:
-                st.download_button(
-                    label="📷 下载图片",
-                    data=img_bytes,
-                    file_name="cumulative_import_by_country.png",
-                    mime="image/png",
-                    key="download_cumulative_grid"
-                )
+            # 下载按钮 - 支持中英文
+            dl_col1, dl_col2 = st.columns([1, 4])
+            with dl_col1:
+                lang_cumulative_grid = st.radio("下载语言", ["English", "中文"], horizontal=True, key="lang_cumulative_grid", label_visibility="collapsed")
+            with dl_col2:
+                fig_download = convert_fig_to_english(fig) if lang_cumulative_grid == "English" else fig
+                img_bytes = fig_to_png_bytes(fig_download, width=1800, height=1200, scale=2)
+                if img_bytes:
+                    st.download_button(
+                        label="📷 下载图片",
+                        data=img_bytes,
+                        file_name="cumulative_import_by_country.png",
+                        mime="image/png",
+                        key="download_cumulative_grid"
+                    )
         else:
             # 单张视图 - 翻页导航
             col1, col2, col3 = st.columns([1, 3, 1])
@@ -860,16 +923,21 @@ def main():
             fig = create_single_cumulative_chart(cumulative_data, forecast_data, selected_year, current_country)
             st.plotly_chart(fig, use_container_width=True)
             
-            # 下载按钮
-            img_bytes = fig_to_png_bytes(fig, width=1200, height=700, scale=2)
-            if img_bytes:
-                st.download_button(
-                    label=f"📷 下载 {current_country} 图片",
-                    data=img_bytes,
-                    file_name=f"cumulative_import_{current_country.lower().replace(' ', '_')}.png",
-                    mime="image/png",
-                    key="download_cumulative_single"
-                )
+            # 下载按钮 - 支持中英文
+            dl_col1, dl_col2 = st.columns([1, 4])
+            with dl_col1:
+                lang_cumulative_single = st.radio("下载语言", ["English", "中文"], horizontal=True, key="lang_cumulative_single", label_visibility="collapsed")
+            with dl_col2:
+                fig_download = convert_fig_to_english(fig) if lang_cumulative_single == "English" else fig
+                img_bytes = fig_to_png_bytes(fig_download, width=1200, height=700, scale=2)
+                if img_bytes:
+                    st.download_button(
+                        label=f"📷 下载 {current_country} 图片",
+                        data=img_bytes,
+                        file_name=f"cumulative_import_{current_country.lower().replace(' ', '_')}.png",
+                        mime="image/png",
+                        key="download_cumulative_single"
+                    )
             
             # 进度指示器
             st.caption(f"📍 {st.session_state.cumulative_country_idx + 1} / {len(COUNTRIES)} | 使用按钮或下拉菜单切换")
