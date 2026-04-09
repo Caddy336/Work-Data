@@ -326,7 +326,7 @@ def create_single_monthly_chart(monthly_pivot, forecast_monthly, selected_year, 
                 text=text_labels,
                 textposition='outside',
                 textangle=0,
-                textfont=dict(size=12),
+                textfont=dict(size=16, color='#333'),
                 cliponaxis=False,
                 hovertemplate='<b>%{y:,.0f} 吨</b><extra></extra>'
             )
@@ -354,7 +354,7 @@ def create_single_monthly_chart(monthly_pivot, forecast_monthly, selected_year, 
                     text=forecast_text,
                     textposition='outside',
                     textangle=0,
-                    textfont=dict(size=10, color='gray'),
+                    textfont=dict(size=14, color='gray'),
                     cliponaxis=False,
                     hovertemplate='<b>预测: %{y:,.0f} 吨</b><extra></extra>'
                 )
@@ -364,23 +364,24 @@ def create_single_monthly_chart(monthly_pivot, forecast_monthly, selected_year, 
                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     
     fig.update_layout(
-        title=dict(text=f"<b>{country}</b> - 月度进口量", font=dict(size=20)),
-        height=500,
+        title=dict(text=f"<b>{country}</b> - 月度进口量", font=dict(size=28)),
+        height=550,
         xaxis=dict(
             tickmode='array',
             tickvals=list(range(1, 13)),
             ticktext=month_names,
             range=[0.5, 12.5],
-            title="月份"
+            title=dict(text="月份", font=dict(size=16))
         ),
         yaxis=dict(
-            title="进口量 (吨)",
+            title=dict(text="进口量 (吨)", font=dict(size=16)),
             tickformat=",",
+            tickfont=dict(size=14),
             separatethousands=True
         ),
         showlegend=True,
         hovermode='closest',
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=14))
     )
     
     return fig
@@ -437,11 +438,11 @@ def create_single_cumulative_chart(cumulative_pivot, forecast_monthly, selected_
                 mode='lines+markers+text',
                 name=f'{int(selected_year)} (Actual)',
                 line=dict(color=country_color, width=4),
-                marker=dict(size=10, color=country_color),
+                marker=dict(size=12, color=country_color),
                 opacity=0.9,
                 text=text_labels,
                 textposition='top center',
-                textfont=dict(size=11),
+                textfont=dict(size=15, color='#333'),
                 hovertemplate='<b>%{y:,.0f} 吨</b><extra></extra>'
             )
         )
@@ -477,11 +478,11 @@ def create_single_cumulative_chart(cumulative_pivot, forecast_monthly, selected_
                         mode='lines+markers+text',
                         name=f'{int(selected_year)} (Forecast)',
                         line=dict(color=country_color, width=3, dash='dash'),
-                        marker=dict(size=8, color=country_color, symbol='square'),
+                        marker=dict(size=10, color=country_color, symbol='square'),
                         opacity=0.5,
                         text=forecast_text,
                         textposition='top center',
-                        textfont=dict(size=10, color='gray'),
+                        textfont=dict(size=13, color='gray'),
                         hovertemplate='<b>预测: %{y:,.0f} 吨</b><extra></extra>'
                     )
                 )
@@ -490,23 +491,24 @@ def create_single_cumulative_chart(cumulative_pivot, forecast_monthly, selected_
                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     
     fig.update_layout(
-        title=dict(text=f"<b>{country}</b> - 累计进口量", font=dict(size=20)),
-        height=500,
+        title=dict(text=f"<b>{country}</b> - 累计进口量", font=dict(size=28)),
+        height=550,
         xaxis=dict(
             tickmode='array',
             tickvals=list(range(1, 13)),
             ticktext=month_names,
             range=[0.5, 12.5],
-            title="月份"
+            title=dict(text="月份", font=dict(size=16))
         ),
         yaxis=dict(
-            title="累计进口量 (吨)",
+            title=dict(text="累计进口量 (吨)", font=dict(size=16)),
             tickformat=",",
+            tickfont=dict(size=14),
             separatethousands=True
         ),
         showlegend=True,
         hovermode='closest',
-        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1)
+        legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=14))
     )
     
     return fig
@@ -738,10 +740,6 @@ def main():
             # 单张视图 - 翻页导航
             col1, col2, col3 = st.columns([1, 3, 1])
             
-            with col1:
-                if st.button("⬅️ 上一个", key="monthly_prev", use_container_width=True):
-                    st.session_state.monthly_country_idx = (st.session_state.monthly_country_idx - 1) % len(COUNTRIES)
-            
             with col2:
                 selected_country_monthly = st.selectbox(
                     "选择国家/地区",
@@ -749,12 +747,19 @@ def main():
                     index=st.session_state.monthly_country_idx,
                     key="monthly_country_select"
                 )
-                # 同步下拉选择与索引
                 st.session_state.monthly_country_idx = COUNTRIES.index(selected_country_monthly)
             
+            with col1:
+                st.write("")  # 占位对齐
+                if st.button("⬅️ 上一个", key="monthly_prev", use_container_width=True):
+                    st.session_state.monthly_country_idx = (st.session_state.monthly_country_idx - 1) % len(COUNTRIES)
+                    st.rerun()
+            
             with col3:
+                st.write("")  # 占位对齐
                 if st.button("下一个 ➡️", key="monthly_next", use_container_width=True):
                     st.session_state.monthly_country_idx = (st.session_state.monthly_country_idx + 1) % len(COUNTRIES)
+                    st.rerun()
             
             # 显示当前国家图表
             current_country = COUNTRIES[st.session_state.monthly_country_idx]
@@ -783,10 +788,6 @@ def main():
             # 单张视图 - 翻页导航
             col1, col2, col3 = st.columns([1, 3, 1])
             
-            with col1:
-                if st.button("⬅️ 上一个", key="cumulative_prev", use_container_width=True):
-                    st.session_state.cumulative_country_idx = (st.session_state.cumulative_country_idx - 1) % len(COUNTRIES)
-            
             with col2:
                 selected_country_cumulative = st.selectbox(
                     "选择国家/地区",
@@ -796,9 +797,17 @@ def main():
                 )
                 st.session_state.cumulative_country_idx = COUNTRIES.index(selected_country_cumulative)
             
+            with col1:
+                st.write("")  # 占位对齐
+                if st.button("⬅️ 上一个", key="cumulative_prev", use_container_width=True):
+                    st.session_state.cumulative_country_idx = (st.session_state.cumulative_country_idx - 1) % len(COUNTRIES)
+                    st.rerun()
+            
             with col3:
+                st.write("")  # 占位对齐
                 if st.button("下一个 ➡️", key="cumulative_next", use_container_width=True):
                     st.session_state.cumulative_country_idx = (st.session_state.cumulative_country_idx + 1) % len(COUNTRIES)
+                    st.rerun()
             
             # 显示当前国家图表
             current_country = COUNTRIES[st.session_state.cumulative_country_idx]
