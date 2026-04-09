@@ -45,10 +45,13 @@ st.markdown(CUSTOM_CSS, unsafe_allow_html=True)
 def fig_to_png_bytes(fig, width=1600, height=1000, scale=2):
     """将 Plotly 图表转换为 PNG 字节数据"""
     try:
-        img_bytes = fig.to_image(format="png", width=width, height=height, scale=scale)
+        import plotly.io as pio
+        # 设置使用 kaleido 引擎
+        img_bytes = pio.to_image(fig, format="png", width=width, height=height, scale=scale, engine="kaleido")
         return img_bytes
     except Exception as e:
-        st.warning(f"图片生成失败: {str(e)}")
+        # 如果失败，提示用户使用 Plotly 工具栏
+        st.info("💡 **下载提示**: 点击图表右上角工具栏的 📷 相机图标可直接下载PNG")
         return None
 
 
