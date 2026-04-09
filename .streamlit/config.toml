@@ -11,7 +11,7 @@ font = "sans serif"
 
 
 # 启用 CORS
-enableCORS = false
+enableCORS = true
 enableXsrfProtection = true
 
 [browser]
