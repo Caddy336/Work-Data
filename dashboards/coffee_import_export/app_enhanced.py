@@ -817,20 +817,23 @@ def main():
             # 单张视图 - 翻页导航
             col1, col2, col3 = st.columns([1, 3, 1])
             
-            with col2:
-                selected_country_monthly = st.selectbox(
-                    "选择国家/地区",
-                    COUNTRIES,
-                    index=st.session_state.monthly_country_idx,
-                    key="monthly_country_select"
-                )
-                st.session_state.monthly_country_idx = COUNTRIES.index(selected_country_monthly)
-            
             with col1:
                 st.write("")  # 占位对齐
                 if st.button("⬅️ 上一个", key="monthly_prev", use_container_width=True):
                     st.session_state.monthly_country_idx = (st.session_state.monthly_country_idx - 1) % len(COUNTRIES)
                     st.rerun()
+            
+            with col2:
+                def on_monthly_select_change():
+                    st.session_state.monthly_country_idx = COUNTRIES.index(st.session_state.monthly_country_select)
+                
+                st.selectbox(
+                    "选择国家/地区",
+                    COUNTRIES,
+                    index=st.session_state.monthly_country_idx,
+                    key="monthly_country_select",
+                    on_change=on_monthly_select_change
+                )
             
             with col3:
                 st.write("")  # 占位对齐
@@ -897,20 +900,23 @@ def main():
             # 单张视图 - 翻页导航
             col1, col2, col3 = st.columns([1, 3, 1])
             
-            with col2:
-                selected_country_cumulative = st.selectbox(
-                    "选择国家/地区",
-                    COUNTRIES,
-                    index=st.session_state.cumulative_country_idx,
-                    key="cumulative_country_select"
-                )
-                st.session_state.cumulative_country_idx = COUNTRIES.index(selected_country_cumulative)
-            
             with col1:
                 st.write("")  # 占位对齐
                 if st.button("⬅️ 上一个", key="cumulative_prev", use_container_width=True):
                     st.session_state.cumulative_country_idx = (st.session_state.cumulative_country_idx - 1) % len(COUNTRIES)
                     st.rerun()
+            
+            with col2:
+                def on_cumulative_select_change():
+                    st.session_state.cumulative_country_idx = COUNTRIES.index(st.session_state.cumulative_country_select)
+                
+                st.selectbox(
+                    "选择国家/地区",
+                    COUNTRIES,
+                    index=st.session_state.cumulative_country_idx,
+                    key="cumulative_country_select",
+                    on_change=on_cumulative_select_change
+                )
             
             with col3:
                 st.write("")  # 占位对齐
