@@ -511,21 +511,21 @@ def create_single_cumulative_chart(cumulative_pivot, forecast_monthly, selected_
     # 添加预测累计数据
     if country in ['Brazil', 'Vietnam', 'Colombia', 'Uganda'] and len(forecast_monthly) > 0:
         forecast_country = forecast_monthly[
-            (forecast_monthly['Country_Category'] == country) & 
-            (forecast_monthly['year'] == selected_year)
-        ].sort_values('month')
-        
+            (forecast_monthly['Country_Category'] == country) &
+            (forecast_monthly['forecast_year'] == selected_year)
+        ].sort_values('forecast_month')
+
         if len(forecast_country) > 0:
             country_color = COLOR_MAP.get(country, '#95a5a6')
-            
+
             if len(selected_data) > 0:
                 base_cumsum = selected_data[cumsum_col].iloc[-1]
                 last_actual_month = selected_data['month'].iloc[-1]
             else:
                 base_cumsum = 0
                 last_actual_month = 0
-            
-            forecast_country = forecast_country[forecast_country['month'] > last_actual_month]
+
+            forecast_country = forecast_country[forecast_country['forecast_month'] > last_actual_month]
             
             if len(forecast_country) > 0:
                 forecast_col = 'Forecast_Quantity_tons' if 'Forecast_Quantity_tons' in forecast_country.columns else 'Forecast_tons'
@@ -534,7 +534,7 @@ def create_single_cumulative_chart(cumulative_pivot, forecast_monthly, selected_
                 
                 fig.add_trace(
                     go.Scatter(
-                        x=forecast_country['month'],
+                        x=forecast_country['forecast_month'],
                         y=forecast_cumsum,
                         mode='lines+markers+text',
                         name=f'{int(selected_year)} (Forecast)',
@@ -657,13 +657,13 @@ def create_cumulative_grid_chart(cumulative_pivot, forecast_monthly, selected_ye
         if country in ['Brazil', 'Vietnam', 'Colombia', 'Uganda'] and len(forecast_monthly) > 0:
             # 计算预测累计值
             forecast_country = forecast_monthly[
-                (forecast_monthly['Country_Category'] == country) & 
-                (forecast_monthly['year'] == selected_year)
-            ].sort_values('month')
-            
+                (forecast_monthly['Country_Category'] == country) &
+                (forecast_monthly['forecast_year'] == selected_year)
+            ].sort_values('forecast_month')
+
             if len(forecast_country) > 0:
                 country_color = COLOR_MAP.get(country, '#95a5a6')
-                
+
                 # 获取最后一个实际数据的累计值作为基础
                 if len(selected_data) > 0:
                     base_cumsum = selected_data[cumsum_col].iloc[-1]
@@ -671,9 +671,9 @@ def create_cumulative_grid_chart(cumulative_pivot, forecast_monthly, selected_ye
                 else:
                     base_cumsum = 0
                     last_actual_month = 0
-                
+
                 # 只取预测月份大于最后实际月份的数据
-                forecast_country = forecast_country[forecast_country['month'] > last_actual_month]
+                forecast_country = forecast_country[forecast_country['forecast_month'] > last_actual_month]
                 
                 if len(forecast_country) > 0:
                     forecast_col = 'Forecast_Quantity_tons' if 'Forecast_Quantity_tons' in forecast_country.columns else 'Forecast_tons'
@@ -684,7 +684,7 @@ def create_cumulative_grid_chart(cumulative_pivot, forecast_monthly, selected_ye
                     
                     fig.add_trace(
                         go.Scatter(
-                            x=forecast_country['month'],
+                            x=forecast_country['forecast_month'],
                             y=forecast_cumsum,
                             mode='lines+markers+text',
                             name=f'{int(selected_year)} (Forecast)',
